@@ -64,6 +64,9 @@ jobs:
       # CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded → сам telegram-bot-api тоже /MT,
       #   иначе несовпадение CRT с статическими портами vcpkg.
       # gperf оставляем x64-windows: это build-инструмент (генерит код), не линкуется в .exe.
+      #   НО: раз задан VCPKG_TARGET_TRIPLET=x64-windows-static, vcpkg добавляет в путь поиска
+      #   tools/ только статического триплета, поэтому gperf (он x64-windows) не находится
+      #   автоматически — указываем его явно через GPERF_EXECUTABLE.
       #
       # ФОЛБЭК: если упадёт на несовпадении CRT (LNK2038 / mixing /MT and /MD) или
       #   проект не уважает CMP0091 — поменяй триплет на x64-windows-static-md и
@@ -83,6 +86,7 @@ jobs:
                 -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake ^
                 -DVCPKG_TARGET_TRIPLET=x64-windows-static ^
                 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+                -DGPERF_EXECUTABLE:FILEPATH="%VCPKG_INSTALLATION_ROOT%\installed\x64-windows\tools\gperf\gperf.exe" ^
                 ..
           cmake --build . --target install --config Release
           cd ..
